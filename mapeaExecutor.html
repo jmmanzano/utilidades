@@ -107,7 +107,7 @@
             camposSalida.forEach((campoSalida, index) =>{
                 mensajeSalida += `@Mapping( source = "${camposEntrada[index].value}", target = "${campoSalida.innerHTML}"),\n\t`
             })
-            mensajeSalida += `})\n ${nombreExecutor}In ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)}To${nombreExecutor} (${nombreOrigen} ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)});\n}`
+            mensajeSalida += `})\n ${nombreExecutor}In ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)}To${nombreExecutor}In (${nombreOrigen} ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)});\n}`
             salida.value = mensajeSalida
         }
         function limpiar(){
