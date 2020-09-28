@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapeos mediante array WID</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script>
+        function convertir() {
+            let claseOrigen = document.getElementById('claseOrigen').value;
+            let claseDestino = document.getElementById('claseDestino').value;
+            let claseOrigenLow = claseOrigen[0].toLowerCase() + claseOrigen.slice(1)
+            let origen = document.getElementById('origen').value;
+            let destino = document.getElementById('destino').value;
+            let salida = document.getElementById('salida');
+            let arrayOrigen = origen.split(',');
+            let arrayDestino = destino.split(',');
+            let cadena = `@Mappings({\n`;
+            arrayOrigen.forEach((element, index) => {
+                cadena += `\t@Mapping(source = ${element.trim()},\t target = ${arrayDestino[index].trim()}),\n`
+            });
+            cadena += `})\n`;
+            cadena += `public ${claseDestino} ${claseOrigenLow}To${claseDestino} (${claseOrigen} ${claseOrigenLow});`
+            salida.value = cadena;
+        }
+        function copiaTexto(event) {
+            event.target.select();
+            document.execCommand("copy");
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <h1>Mapeador mediante arrays WID</h1>
+        <div class="form-row">
+            <div class="col-6">
+                <label for="claseOrigen">Clase Origen</label>
+                <input type="text" class="form-control" id="claseOrigen" name="claseOrigen">
+            </div>
+            <div class="col-6">
+                <label for="origen">Clase Destino</label>
+                <input type="text" class="form-control" id="claseDestino" name="claseDestino">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="col-6">
+                <label for="origen">Origen</label>
+                <textarea class="form-control" name="origen" id="origen" cols="50" rows="10"></textarea>
+            </div>
+            <div class="col-6">
+                <label for="destino">Destino</label>
+                <textarea class="form-control" name="destino" id="destino" cols="50" rows="10"></textarea>
+            </div>
+        </div>
+        <button class="btn btn-success btn-block" onclick="convertir()">convertir</button>
+        <div class="form-row">
+            <h2>Salida</h2>
+            <textarea onclick="copiaTexto(event)" class="form-control" id="salida" cols="150" rows="10"></textarea>
+        </div>
+    </div>
+</body>
+
+</html>
