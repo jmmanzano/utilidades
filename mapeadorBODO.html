@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapeos BO/DO</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        #resto{
+            display: none
+        }
+    </style>
+    <script>
+        var mensajeSalida = '';
+        function generaTabla(campos, camposEntrada){
+            let restoSelect = ''
+            camposEntrada.forEach(campo =>{
+                restoSelect += `<option value="${campo}" >${campo}</option>`
+            })
+            let tabla = '';
+            campos.forEach(campo =>{
+                tabla += `<tr>
+                        <td><select class="form-control" name="campoEntrada" id="select${campo.indice}">
+                                <option value="${campo.entrada}" selected>${campo.entrada}</option>
+                                ${restoSelect}
+                                <option value="skip">No Mapear</option>
+                                <option value="ignore">Ignorar</option>
+                                <option value="S">Defecto S</option>
+                                <option value="N">Defecto N</option>
+                                <option value="expresion">Expresión</option>
+                            </select>
+                        </td>
+                        <td name="campoSalida">${campo.salida}</td>
+                    </tr>`
+            })
+            return tabla
+        }
+        function copiar(event) {
+            event.target.select()
+            document.execCommand('copy')
+        }
+        function seleccionar(event) {
+            event.target.select()
+        }
+        function generaDO(cadena, elem){
+        	const regexDO = /@OracleField\(.+\)\s+private\s+\w+\s+(\w+);/gm;
+            const regexDONombre = /public\s+class\s+(\w+)\s+extends/gm;
+            try{
+            	let nombre = regexDONombre.exec(cadena)[1];
+            	let arraySalida = [];
+            	while ((m = regexDO.exec(cadena)) !== null) {
+                	if (m.index === regexDO.lastIndex) {
+                    	regexDO.lastIndex++;
+                	}
+                	arraySalida.push(m[1])
+            	}
+            	elem.value = nombre
+            	return arraySalida;
+            }catch(err){
+            	return null;
+            }
+            
+
+        }
+        function generaBO(cadena, elem){
+        	const regexBO = /@XmlType\s*\(\s*name\s*=\s*\"(\w+)\"\s*,\s*propOrder\s*=\s*\{\s*(["\w\,\s]+)\s*/gm;
+        	let m;
+            m = regexBO.exec(cadena)
+            try{
+				let nombre = m[1];
+            	let arrayEntrada = m[2].split(',')
+            	let arrayLimpio = []
+            	for (let index = 0; index < arrayEntrada.length; index++) {
+                	arrayLimpio.push(arrayEntrada[index].trim().replace('"', '').replace('"', ''))
+            	}
+            	elem.value = nombre
+            	return arrayLimpio;
+            }catch(err){
+            	return null;
+            }
+            
+
+        }
+        function generar() {
+            document.getElementById('out').value = ''
+            let destino = document.getElementById('destino').value;
+            let origen = document.getElementById('origen').value;
+            if(destino == "" || origen == ""){
+                alert('Falta información de entrada')
+            }else{
+            	let lista = [];
+                document.getElementById("resto").style.display = "block";
+                let bodyTabla = document.getElementById('bodyTabla');
+                let arrayOrigen = generaBO(origen, document.getElementById('nombreOrigen'))
+                if(arrayOrigen == null) {
+					arrayOrigen = generaDO(origen, document.getElementById('nombreOrigen'))
+                }
+
+                let arrayDestino = generaDO(destino, document.getElementById('nombreDestino'))
+                if( arrayDestino == null ){
+                	arrayDestino = generaBO(destino, document.getElementById('nombreDestino'))
+                }
+                
+                // mezclado campos
+                campos = []
+                arrayDestino.forEach((nombreSalida, index) =>{
+                    let candidatos = arrayOrigen.filter(nombreEntrada => { return nombreSalida.toLowerCase().includes(nombreEntrada.toLowerCase())});
+                    if(candidatos.length > 0){
+                        campos.push({indice:index, salida: nombreSalida, entrada: candidatos[0]})
+                    }else{
+                        campos.push({indice:index, salida: nombreSalida, entrada: 'selecciona'})
+                    }
+                })
+                bodyTabla.innerHTML = generaTabla(campos, arrayOrigen)
+            }
+        }
+        function generaSalida(){
+            let nombreDestino = document.getElementById('nombreDestino').value
+            let nombreOrigen = document.getElementById('nombreOrigen').value
+            let salida = document.getElementById('out');
+            let camposSalida = document.getElementsByName('campoSalida')
+            let camposEntrada = document.getElementsByName('campoEntrada')
+            let mensajeSalida = `
+@Mapper(componentModel = "spring")
+public interface ${nombreDestino}Mapper {\n@Mappings({\n\t`
+            camposSalida.forEach((campoSalida, index) =>{
+            	let valorEntrada = camposEntrada[index].value;
+            	if(valorEntrada === 'S'){
+					mensajeSalida += `@Mapping( constant = "S", target = "${campoSalida.innerHTML}"),\n\t`
+            	}else if(valorEntrada === 'N'){
+					mensajeSalida += `@Mapping( constant = "N", target = "${campoSalida.innerHTML}"),\n\t`
+            	}else if(valorEntrada === 'expresion'){
+					mensajeSalida += `@Mapping( expression = "java(${camposEntrada[index].value})", target = "${campoSalida.innerHTML}"),\n\t`
+            	}else if(valorEntrada === 'ignore'){
+            		mensajeSalida += `@Mapping( ignore = true, target = "${campoSalida.innerHTML}""),\n\t`
+            	}else if(valorEntrada === 'skip'){
+					// no se hace nada
+            	}else{
+            		mensajeSalida += `@Mapping( source = "${camposEntrada[index].value}", target = "${campoSalida.innerHTML}"),\n\t`
+            	}
+            })
+            mensajeSalida += `})\n ${nombreDestino} ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)}To${nombreDestino} (${nombreOrigen} ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)});\n}`
+            salida.value = mensajeSalida
+        }
+        function limpiar(){
+            document.getElementById('nombreDestino').value = ''
+            document.getElementById('nombreOrigen').value = ''
+            document.getElementById('destino').value = '';
+            document.getElementById('origen').value = '';
+            document.getElementById('out').value = '';
+            document.getElementById("resto").style.display = "none";
+            document.getElementById("bodyTabla").innerHTML = ''
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <h2>Mapeos Bussiness/Data Object</h2>
+        <div class="form-row">
+            <div class="col-6">
+                <h5>Origen</h5>
+                <textarea onclick="seleccionar(event)" class="form-control" name="origen" id="origen" cols="30" rows="10"></textarea>
+            </div>
+            <div class="col-6">
+                <h5>Destino</h5>
+                <textarea onclick="seleccionar(event)" class="form-control" name="destino" id="destino" cols="30" rows="10"></textarea>
+            </div>
+        </div>
+        <div class="form-row">
+            <button class="btn btn-primary btn-block" onclick="generar()">Preparar Campos</button>
+        </div>
+        <div id="resto">
+        <div class="form-row">
+            <table id="tabla" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Entrada</th>
+                        <th>Salida</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyTabla">
+                </tbody>
+            </table>
+        </div>
+        <div class="form-row">
+            <div class="col-6"><button class="btn btn-success btn-block" onclick="generaSalida()">Generar Salida</button></div>
+            <div class="col-6"><button class="btn btn-danger btn-block" onclick="limpiar()">Limpiar</button></div>
+
+        </div>
+        <div class="form-row">
+            <h5>Salida</h5>
+            <textarea class="form-control" onclick="copiar(event)" name="out" id="out" cols="30" rows="10"></textarea>
+        </div>
+    </div>
+    </div>
+    <input type="hidden" id="nombreDestino">
+    <input type="hidden" id="nombreOrigen">
+</body>
+</html>
