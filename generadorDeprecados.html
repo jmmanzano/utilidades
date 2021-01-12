@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preparacion ExecutorIn</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        #resto {
+            display: none
+        }
+    </style>
+    <script>
+
+        function copiar(event) {
+            event.target.select()
+            document.execCommand('copy')
+        }
+        function seleccionar(event) {
+            event.target.select()
+        }
+        function generar() {
+           let operacion = document.getElementById("operacion").value;
+           let marca = document.getElementById("marca").value;
+           let interfaz = document.getElementById("interfaz").value; 
+           
+           let operacionCapi = operacion[0].toUpperCase()+operacion.substring(1);
+
+           let mapeaCtx = ` smo.setDataObject("context/shared/mse", smo.getDataObject("body/${operacion}/MSE${operacionCapi}"));
+                            smo.setString("context/shared/nombreMCA" , "${marca}");
+                            smo.setString("context/shared/isCanales" , "N");
+                            GestionLogs.escribirTrazaDataObject("Entrada a subflujo", smo);
+out.fire(smo);`;
+            let mapeaBody = `new MapBodyOutGetParam(smo, "MSE${operacionCapi}",
+							"context/shared/mse",
+							"${interfaz}",
+							"${operacion}RequestMsg",
+							"${operacion}");
+GestionLogs.escribirTrazaDataObject("Mapea body", smo);
+out.fire(smo);`;
+            document.getElementById("outBody").value = mapeaBody;
+            document.getElementById("outCtx").value = mapeaCtx; 
+            document.getElementById("resto").style.display = "block";
+            localStorage.setItem("datos", JSON.stringify({operacion: operacion, marca:marca, interfaz:interfaz}))
+        }
+
+        function limpiar() {
+            document.getElementById("operacion").value = "";
+            document.getElementById("marca").value ="";
+            document.getElementById("interfaz").value ="";  
+            document.getElementById("outBody").value = "";
+            document.getElementById("outCtx").value = ""; 
+            document.getElementById("resto").style.display = "none";
+            localStorage.clear();
+        }
+        function cargaLocal(){
+            let datosLocal = localStorage.getItem("datos");
+            if(undefined != datosLocal){
+                let objLocal = JSON.parse(datosLocal);
+                document.getElementById("operacion").value = objLocal.operacion;
+                document.getElementById("marca").value = objLocal.marca;
+                document.getElementById("interfaz").value = objLocal.interfaz;
+            }
+             
+        }
+    </script>
+</head>
+
+<body onload="cargaLocal()">
+    <div class="container-fluid">
+        <h2>Mapeos Executor In</h2>
+        <div class="form-row">
+            <div class="col-3">
+                <h5>Operacion</h5>
+                <input type="text" onclick="seleccionar(event)" class="form-control" name="operacion" id="operacion">
+            </div>
+            <div class="col-3">
+                <h5>Marca</h5>
+                <input type="text" onclick="seleccionar(event)" class="form-control" name="marca" id="marca">
+            </div>
+            <div class="col-6">
+                <h5>Interfaz</h5>
+                <input type="text" onclick="seleccionar(event)" class="form-control" name="interfaz" id="interfaz">
+            </div>
+        </div>
+        <br>
+        <div class="form-row">
+            <button class="btn btn-primary btn-block" onclick="generar()">Generar</button>
+        </div>
+        <div id="resto">
+            <div class="form-row">
+                <div class="col-12"><button class="btn btn-danger btn-block" onclick="limpiar()">Limpiar</button></div>
+
+            </div>
+            <div class="form-row">
+                <h5>Mapea Contexto</h5>
+                <textarea class="form-control" onclick="copiar(event)" name="outCtx" id="outCtx" cols="30"
+                    rows="10"></textarea>
+            </div>
+            <div class="form-row">
+                <h5>Mapea Body</h5>
+                <textarea class="form-control" onclick="copiar(event)" name="outBody" id="outBody" cols="30" rows="10"></textarea>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
