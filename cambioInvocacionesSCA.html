@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambio Invocaciones SCA</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        #resto {
+            display: none
+        }
+    </style>
+    <script>
+
+        function copiar(event) {
+            event.target.select()
+            document.execCommand('copy')
+        }
+        function seleccionar(event) {
+            event.target.select()
+        }
+        function generar() {
+            let partner = document.getElementById("partner").value;
+			let namespace = document.getElementById("namespace").value;
+			let interfaz = document.getElementById("interfaz").value;
+			let segundaCadena = encodeURIComponent(`{${namespace}}${interfaz}`)
+			let arrayBusqueda = [];
+			let arraySustitucion = [];
+			// primero el partner
+			arrayBusqueda.push(`${partner}^`);
+			arraySustitucion.push(`${partner}^${partner}1^`);
+			arrayBusqueda.push(`^${partner}`);
+			arraySustitucion.push(`^${partner}^${partner}1`);
+			//luego la interfaz
+			arrayBusqueda.push(`${segundaCadena}^`);
+			arraySustitucion.push(`${segundaCadena}^${segundaCadena}^`);
+			arrayBusqueda.push(`^${segundaCadena}`);
+			arraySustitucion.push(`^${segundaCadena}^${segundaCadena}`);
+			let tabla = '';
+			for(let i = 0; i < arrayBusqueda.length; i++){
+				tabla += `<tr>
+					<td><textarea class="form-control" onclick="copiar(event)" >${arrayBusqueda[i]}</textarea></td>
+					<td><textarea class="form-control" onclick="copiar(event)" >${arraySustitucion[i]}</textarea></td>
+				</tr>`
+			}
+			//console.log(tabla)
+			document.getElementById("tableBody").innerHTML = tabla;
+            document.getElementById("resto").style.display = "block";
+
+        }
+
+        function limpiar() {
+            document.getElementById("partner").value = "";
+            document.getElementById("namespace").value = "";
+			document.getElementById("interfaz").value = "";
+			document.getElementById("tableBody").value = "";
+            document.getElementById("resto").style.display = "none";
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <h2>Cambio invocaciones SCA</h2>
+        <div class="form-row">
+            <div class="col-2">
+                <label for="partner">Partner</label>
+                <input class="form-control" onclick="seleccionar(event)" name="partner" id="partner" />
+            </div>
+			<div class="col-2">
+                <label for="interfaz">Interfaz</label>
+                <input class="form-control" onclick="seleccionar(event)" name="interfaz" id="interfaz" />
+            </div>
+			<div class="col-8">
+                <label for="namespace">Namespace</label>
+                <input class="form-control" onclick="seleccionar(event)" name="namespace" id="namespace" />
+            </div>
+        </div>
+        <br>
+        <div class="form-row">
+            <button class="btn btn-primary btn-block" onclick="generar()">Generar</button>
+        </div>
+        <div id="resto">
+            <div class="form-row">
+                <div class="col-12"><button class="btn btn-danger btn-block" onclick="limpiar()">Limpiar</button></div>
+
+            </div>
+            <div class="form-row">
+                <table class="table table-stripped">
+					<thead>
+						<tr>
+							<th>BUSCAR</th>
+							<th>SUSTITUIR</th>
+						</tr>
+					</thead>
+					<tbody id="tableBody">
+					</tbody>
+				</table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
