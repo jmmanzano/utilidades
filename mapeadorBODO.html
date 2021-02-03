@@ -133,7 +133,7 @@ public interface ${nombreDestino}Mapper {\n@Mappings({\n\t`
             	}else if(valorEntrada === 'expresion'){
 					mensajeSalida += `@Mapping( expression = "java(${camposEntrada[index].value})", target = "${campoSalida.innerHTML}"),\n\t`
             	}else if(valorEntrada === 'ignore'){
-            		mensajeSalida += `@Mapping( ignore = true, target = "${campoSalida.innerHTML}""),\n\t`
+            		mensajeSalida += `@Mapping( ignore = true, target = "${campoSalida.innerHTML}"),\n\t`
             	}else if(valorEntrada === 'skip'){
 					// no se hace nada
             	}else{
