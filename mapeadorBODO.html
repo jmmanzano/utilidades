@@ -122,7 +122,7 @@
             let camposSalida = document.getElementsByName('campoSalida')
             let camposEntrada = document.getElementsByName('campoEntrada')
             let mensajeSalida = `
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", builder=@org.mapstruct.Builder(disableBuilder=true))
 public interface ${nombreDestino}Mapper {\n@Mappings({\n\t`
             camposSalida.forEach((campoSalida, index) =>{
             	let valorEntrada = camposEntrada[index].value;
