@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Generador POJOS desde rest</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script>
+        function convertir(){
+			const regex = /((\w+)\s*\{)/gm;
+			const regex2 = /^((\w+)\s*\(([a-zA-Z\[\]]+)(,\s*\w+)?\))/gm;
+            var mapObjectos = new Map();
+            let entrada = document.getElementById('entrada').value;
+			let objetos = entrada.split('}');
+			objetos.forEach(obj => {
+				
+				let m;
+				let m2;
+				let clase;
+				while ((m = regex.exec(obj)) !== null) {
+					if (m.index === regex.lastIndex) {
+						regex.lastIndex++;
+					}
+					clase = m[2].substring(0,1).toUpperCase()+m[2].substring(1);
+				}
+				let tipos = new Map();
+				while ((m2 = regex2.exec(obj)) !== null) {
+					if (m2.index === regex2.lastIndex) {
+						regex2.lastIndex++;
+					}
+					let tipo = m2[3].replace('[','<').replace(']', '>').replace('Array', 'ArrayList');
+					let letraTipo = tipo.indexOf('<');
+					if(letraTipo == -1){
+						tipo = tipo.substring(0,1).toUpperCase()+tipo.substring(1);
+					}else{
+						tipo = tipo.substring(0,letraTipo+1)+tipo.substring(letraTipo+1, letraTipo+2).toUpperCase()+tipo.substring(letraTipo+2);
+					}
+					tipos.set(m2[2], tipo);
+				}
+				mapObjectos.set(clase, tipos);
+				
+			});
+			var cadena = ""
+			mapObjectos.forEach( (val, key) =>{
+			 if(key != undefined){
+
+				 cadena += `public class ${key} {\n`;
+					val.forEach((tipoCampo, nombreCampo)=>{
+						cadena += `\tpublic ${tipoCampo} ${nombreCampo};\n`
+					});
+					cadena +='}\n\n\n';
+			 }
+				
+			});
+
+            document.getElementById('salida').value = cadena;
+        }
+        function copiaTexto(event) {
+                event.target.select();
+                document.execCommand("copy");
+            }
+    </script>
+</head>
+<body>
+  <div class="container-fluid">
+    <h1>Generador de POJOS desde definicion de REST</h1>
+    <div class="form-row">
+      <label for="entrada">Entrada</label>
+      <textarea class="form-control" name="entrada" id="entrada" cols="50" rows="10"></textarea>
+    </div>
+    <div class="form-row">
+      <button class="btn btn-success btn-block"  onclick="convertir()">convertir</button>
+    </div>
+    <div class="form-row">
+      <label for="salida">Salida</label>
+      <textarea class="form-control" onclick="copiaTexto(event)" name="salida" id="salida" cols="50" rows="10"></textarea>
+    </div>
+  </div>
+
+</body>
+</html>
