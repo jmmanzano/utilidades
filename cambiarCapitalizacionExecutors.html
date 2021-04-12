@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambiar Capitalizacion Executors</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment-with-locales.min.js"></script>
+    <style>
+        #resto {
+            display: none
+        }
+    </style>
+    <script>
+
+        function copiar(event) {
+            event.target.select()
+            document.execCommand('copy')
+        }
+        function seleccionar(event) {
+            event.target.select()
+        }
+        function generar() {
+            const regex = /(<(\/)?(\w+)(\/)?>)/gm;
+			const regex2 = /([A-Z0-9])/gm;
+            let entrada = document.getElementById("entrada").value;
+            document.getElementById("salida").value;
+            let m;
+            let lista = new Set()
+            while ((m = regex.exec(entrada)) !== null) {
+                if (m.index === regex.lastIndex) {
+                    regex.lastIndex++;
+                }
+				//console.log(m[1]);
+                lista.add(m[1])
+            }
+            let sust = entrada;
+			const subs = `_$1`;
+            lista.forEach(entry =>{
+				let replace = entry.replace(regex2,subs );
+                sust = sust.replaceAll(entry, replace.toUpperCase())
+            })
+
+
+
+            document.getElementById("salida").value = sust;
+            document.getElementById("resto").style.display = "block";
+
+        }
+
+        function limpiar() {
+            document.getElementById("entrada").value = "";
+            document.getElementById("salida").value = "";
+            document.getElementById("resto").style.display = "none";
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <h2>Cambiar capitalizacion Executors</h2>
+        <div class="form-row">
+            <div class="col-12">
+                <h5>Entrada</h5>
+                <textarea class="form-control" onclick="copiar(event)" name="entrada" id="entrada" cols="30" rows="10"></textarea>
+            </div>
+        </div>
+        <br>
+        <div class="form-row">
+            <button class="btn btn-primary btn-block" onclick="generar()">Generar</button>
+        </div>
+        <div id="resto">
+            <div class="form-row">
+                <div class="col-12"><button class="btn btn-danger btn-block" onclick="limpiar()">Limpiar</button></div>
+
+            </div>
+            <div class="form-row">
+                <h5>Salida</h5>
+                <textarea class="form-control" onclick="copiar(event)" name="salida" id="salida" cols="30"
+                    rows="10"></textarea>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
