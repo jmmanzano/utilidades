@@ -29,7 +29,6 @@
 
            let mapeaCtx = ` smo.setDataObject("context/shared/mse", smo.getDataObject("body/${operacion}/MSE${operacionCapi}"));
                             smo.setString("context/shared/nombreMCA" , "${marca}");
-                            smo.setString("context/shared/isCanales" , "N");
                             GestionLogs.escribirTrazaDataObject("Entrada a subflujo", smo);
 out.fire(smo);`;
             let mapeaBody = `new MapBodyOutGetParam(smo, "MSE${operacionCapi}",
