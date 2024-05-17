@@ -123,24 +123,24 @@
             let camposEntrada = document.getElementsByName('campoEntrada')
             let mensajeSalida = `
 @Mapper(componentModel = "spring", builder=@org.mapstruct.Builder(disableBuilder=true))
-public interface ${nombreDestino}Mapper {\n@Mappings({\n\t`
+public interface ${nombreDestino}Mapper {\n`
             camposSalida.forEach((campoSalida, index) =>{
             	let valorEntrada = camposEntrada[index].value;
             	if(valorEntrada === 'S'){
-					mensajeSalida += `@Mapping( constant = "S", target = "${campoSalida.innerHTML}"),\n\t`
+					mensajeSalida += `@Mapping( constant = "S", target = "${campoSalida.innerHTML}")\n\t`
             	}else if(valorEntrada === 'N'){
-					mensajeSalida += `@Mapping( constant = "N", target = "${campoSalida.innerHTML}"),\n\t`
+					mensajeSalida += `@Mapping( constant = "N", target = "${campoSalida.innerHTML}")\n\t`
             	}else if(valorEntrada === 'expresion'){
-					mensajeSalida += `@Mapping( expression = "java(${camposEntrada[index].value})", target = "${campoSalida.innerHTML}"),\n\t`
+					mensajeSalida += `@Mapping( expression = "java(${camposEntrada[index].value})", target = "${campoSalida.innerHTML}")\n\t`
             	}else if(valorEntrada === 'ignore'){
-            		mensajeSalida += `@Mapping( ignore = true, target = "${campoSalida.innerHTML}"),\n\t`
+            		mensajeSalida += `@Mapping( ignore = true, target = "${campoSalida.innerHTML}")\n\t`
             	}else if(valorEntrada === 'skip'){
 					// no se hace nada
             	}else{
-            		mensajeSalida += `@Mapping( source = "${camposEntrada[index].value}", target = "${campoSalida.innerHTML}"),\n\t`
+            		mensajeSalida += `@Mapping( source = "${camposEntrada[index].value}", target = "${campoSalida.innerHTML}")\n\t`
             	}
             })
-            mensajeSalida += `})\n ${nombreDestino} ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)}To${nombreDestino} (${nombreOrigen} ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)});\n}`
+            mensajeSalida += `\n ${nombreDestino} ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)}To${nombreDestino} (${nombreOrigen} ${nombreOrigen[0].toLowerCase()}${nombreOrigen.substring(1)});\n}`
             salida.value = mensajeSalida
         }
         function limpiar(){
